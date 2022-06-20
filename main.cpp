@@ -10,13 +10,19 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <memory>
 
 using namespace std;
+
+/* Helper function to make formatting simpler */
+inline void printLine() {
+	cout << endl << "---------------------\n";
+}
 
 /* cpp14 - auto return type
 * allow the compiler to implicitly decide the return type of functions
 * 
-* This function counts the number of elements within a vector that are even numbers
+* This function counts the number of elements within a vector that match someValue
 */
 template<typename VEC_TYPE>
 auto count_stuff(const vector<VEC_TYPE>& vec, const int& someValue) {
@@ -28,7 +34,7 @@ auto count_stuff(const vector<VEC_TYPE>& vec, const int& someValue) {
 * allows lambdas to use generic types within parameters.. more useful templated features
 * 
 * This function takes a vector<T> by reference, sorts it in descending order then uses a for_each to print the contents 
-* both lambdas use generic types 
+* both lambdas use generic parameter types 
 */
 template<typename VEC_TYPE>
 void sort_vec_desc(vector<VEC_TYPE>& vec) {
@@ -36,6 +42,7 @@ void sort_vec_desc(vector<VEC_TYPE>& vec) {
 
 	cout << endl << "After sorting, vector now contains: \n";
 	for_each(begin(vec), end(vec), [](const auto x) { cout << x << " "; });
+	cout << endl;
 }
 
 /* cpp14 - generic lambda capture types
@@ -54,6 +61,7 @@ void double_vector(vector<VEC_TYPE>& vec) {
 
 	cout << endl << "After transforming, vector now contains: \n";
 	for_each(begin(vec), end(vec), [](const auto x) { cout << x << " "; });
+	cout << endl;
 }
 
 /* cpp14 - constexpr gets an overhaul
@@ -71,9 +79,34 @@ constexpr auto cpp14_constexpr() {
 	constexpr auto newVal = someVal1 + someVal2;
 	
 	if (newVal % 2 == 0)
-		return "Even result";
+		return "\nEven result\n";
 	else
-		return "Odd result";
+		return "\nOdd result\n";
+}
+
+/* cpp14 - std::move can be used to capture variable in lambda expressions
+* Instead of copying or referencing you are able to move
+* 
+* This function demonstrates moves a unique pointer into the capture clause to 
+* transform a vector to subtract each element's value by the argument const T& value 
+*/
+template<typename VEC_TYPE, typename T>
+void move_lambda (vector<VEC_TYPE>& vec, const T& value) {
+	auto ptr = make_unique<T>(value);
+	transform(begin(vec), end(vec), begin(vec), [cap = move(ptr)](auto& c) { return c + *cap; });
+
+	cout << endl<<  "After transforming, vector now contains: \n";
+	for_each(begin(vec), end(vec), [](const auto x) { cout << x << " "; });
+	cout << endl;
+}
+
+/* cpp14 - binary literals can be utilized by prefacing a number with 0b or 0B
+* 
+* This function directly instantiates an integer and gives it the binary value of 00011101, then prints it to the screen as a plain int 
+*/
+void binary_literal_example() {
+	const int bin = 0b00011101;
+		cout << endl << "Binary literal output = " << bin << endl; 
 }
 
 int main() {
@@ -82,12 +115,20 @@ int main() {
 	vector<int> vec{ 1,2,3,4,5,6,7,8,9,10 };
 	cout << "Occurences of number " << testValue << " in vector: " << count_stuff(vec, testValue) << endl;
 
-	cout << endl << "---------------------" << endl;
+	printLine();
 	sort_vec_desc(vec);
 
-	cout << endl << "---------------------" << endl;
+	printLine();
 	double_vector(vec);
 
-	cout << endl << "---------------------" << endl;
+	printLine();
 	cout << cpp14_constexpr();
+
+	printLine();
+	move_lambda(vec, 50);
+
+	printLine();
+	binary_literal_example();
+
+	return 0;
 }
